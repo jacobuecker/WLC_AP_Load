@@ -224,17 +224,17 @@ def main():
         while(True):
             #open the sql connection
             sql = SQL()
-            sql.username = 'username'
-            sql.ip_address = '0.0.0.0'
-            sql.password = 'password'
-            sql.database = 'dataBases'
+            sql.username = sys.argv[1]
+            sql.ip_address = sys.argv[2]
+            sql.password = sys.argv[3]
+            sql.database = sys.argv[4]
             sql.connect()
         
-            print '[*] '+str(datetime.datetime.now())+' Polling the WLC for the APs '
+            print '[*] ' + str(datetime.datetime.now()) + ' Polling the WLC for the APs '
             
             snmp = SNMP()
-            snmp.ip_address = "0.0.0.0" 	# IP address for the wireless lan controller
-            snmp.community = "community"
+            snmp.ip_address = sys.argv[5] 	# IP address for the wireless lan controller
+            snmp.community = sys.argv[6]
             
             
             #get a list of switches
@@ -264,4 +264,8 @@ def main():
         exit(0)
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 7:
+        print 'Usage: ', sys.argv[0] , ' <dbUsername> <dbIP> <dbPassword> <dbName> <wlcIP> <communityString>'
+        sys.exit(1)
+    else:
+        main()
