@@ -1,5 +1,7 @@
-import time, datetime, sys
-    
+import time, datetime, sys, thread, os
+
+import cherrypy
+
 import lib
 
 def strip_oid(list, oid):
@@ -67,11 +69,12 @@ def merge_ap_data(names, clients, locations):
     return newList
 
 def save_data(ap_data, sql):
+    paramList = []
     for ap in ap_data:
         params = (str(ap['key']),)
         query = "SELECT * FROM wlc_aps WHERE ap_key=?"
-        apCnt = sql.get_count(query,params)
-        if apCnt > 0:
+        apPresent = sql.is_present(query,params)
+        if apPresent:
             params = (str(ap['name']),str(ap['location']),str(ap['key']))
             query = "UPDATE wlc_aps SET ap_name=?, ap_location=? WHERE ap_key=?"
             sql.write_data(query, params)
@@ -79,22 +82,26 @@ def save_data(ap_data, sql):
             params = (str(ap['key']),str(ap['name']),str(ap['location']))
             query = "Insert INTO wlc_aps (ap_key,ap_name,ap_location) VALUES (?,?,?)"
             sql.write_data(query,params)
-        params = (str(ap['key']),str(time.time()),str(ap['clients']))
-        query = "INSERT INTO wlc_ap_clients (ap_key, timestamp , num_of_clients) VALUES (?,?,?)"
-        sql.write_data(query,params)
+        params = (str(ap['key']),str(time.time()),str(ap['clients']),)
+        paramList.append(params)
+    query = "INSERT INTO wlc_ap_clients (ap_key, timestamp , clients) VALUES (?,?,?)"
+    sql.write_data_dump(query,paramList)
+    sql.commit()
 
 def check_db(sql):
     #init DB
-    query = "create table if not exists wlc_aps (ap_key TEXT,ap_name TEXT,ap_location TEXT)"
+    query = "CREATE TABLE if not exists wlc_aps (ap_key TEXT,ap_name TEXT,ap_location TEXT)"
     sql.write_data_raw(query)
-    query = "create table if not exists wlc_ap_clients (id INTEGER PRIMARY KEY, ap_key text,timestamp TEXT, num_of_clients INTEGER)"
+    query = "CREATE TABLE if not exists wlc_ap_clients (id INTEGER PRIMARY KEY, ap_key text,timestamp INTEGER, clients INTEGER)"
     sql.write_data_raw(query)
+    #query = "CREATE INDEX if not exists timestampSort on wlc_ap_clients (timestamp DESC)"
+    #sql.write_data_raw(query)
+    sql.commit()
 
-def main():
-    try:
-        while(True):
+def get_and_store_data():
+    while(True):
             #open the sql connection
-            db = lib.Database("wlc_load.db")
+            db = lib.Database(os.getcwd() + '/' +"wlc_load.db")
             check_db(db)
             
             print '[*] ' + str(datetime.datetime.now()) + ' Polling the WLC for the APs '
@@ -119,8 +126,26 @@ def main():
             save_data(ap_data, db)
             
             print '[*] Sleeping 15 mins'
-            time.sleep(60 * 15);
-            
+            time.sleep(60)
+            #time.sleep(60 * 15)
+
+def main():
+    try:
+        thread.start_new_thread(get_and_store_data,())
+        global_conf = {
+           'global':    { 'server.environment': 'production',
+                          'tools.staticdir.on': True,
+                          'tools.staticdir.dir' : os.getcwd() + '/',
+                          'engine.autoreload_on': True,
+                          'engine.autoreload_frequency': 5,
+                          'server.socket_host': '0.0.0.0',
+                          'log.access_file' : "/tmp/access.log",
+                          'log.screen': False,
+                          'tools.sessions.on': True,
+                          'server.socket_port':8080,
+                        }
+                  }
+        cherrypy.quickstart(lib.WebServer(os.getcwd() + '/' +"wlc_load.db"),config=global_conf)
     except KeyboardInterrupt:
         exit(0)
 
