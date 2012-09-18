@@ -33,7 +33,14 @@ class Database:
         self.cur.close
         return results
 
-    def get_data_single(self,sql):
+    def get_data_single(self,sql,params):
+        self.cur = self.conn.cursor()
+        self.cur.execute(sql,params)
+        results = self.cur.fetchone()[0]
+        self.cur.close
+        return results
+
+    def get_data_single_raw(self,sql):
         self.cur = self.conn.cursor()
         self.cur.execute(sql)
         results = self.cur.fetchone()[0]

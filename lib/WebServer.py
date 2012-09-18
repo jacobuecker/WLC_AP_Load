@@ -1,12 +1,13 @@
 import os, time, json
 import cherrypy
 
-from sqliteDB import Database
+from DataRepo import DataRepo
 
 class WebServer(object):
     def __init__(self,dbPath):
         self.clientData = []
-        self.db = dbPath
+        self.dbpath = dbPath
+        
 
     def _header(self,inject):
         html = open(os.path.join(os.curdir,'html','frags') + '/header','r').read()
@@ -32,16 +33,8 @@ class WebServer(object):
         return html
     
     def api_get_currentLoad(self):
-        db = Database(self.db);
-        APs = db.get_data_raw("SELECT * FROM wlc_aps")
-        data = []
-        for ap in APs:
-            node = {}
-            node['name'] = ap[1]
-            node['location'] = ap[2]
-            node['cnt'] = int(db.get_data_single("SELECT clients from wlc_ap_clients WHERE ap_key='" + str(ap[0]) + "'"))
-            data.append(node)
-        data = sorted(data, key=lambda k: k['cnt'], reverse = True)
+        db = DataRepo(self.dbpath)
+        data = db.get_current_load()
         return json.dumps(data)
     
     index.exposed = True

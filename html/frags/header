@@ -14,7 +14,7 @@
 	</head>
 <body>
 	<div id="container">
-		<h1>
+		<h1 id="header">
 			Welcome to WLC AP Load.
 		</h1>
 		<div id="body">
