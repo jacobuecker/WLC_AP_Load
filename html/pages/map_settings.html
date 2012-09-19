@@ -1,0 +1,52 @@
+<div id="aps" style="float:left; width:300px;">
+
+</div>
+
+<input type="button" id="btn_saveGroups" value="Save Groups" style="float:right;" />
+<input type="button" id="btn_newGroup" value="New Group" style="float:right;" />
+
+<div id="groups" style="float:right; width:300px;">
+
+</div>
+<br style="clear:both;" />
+
+<div id="modalDiv" style="display:none;">
+	Help with the cords.
+	<br />
+	<input id="mod_lat" type="hidden" />
+	<input id="mod_lng" type="hidden" />
+	<input id="btn_mod_save_cords" type="button" value="Save Cords" />
+	<div id="map" style="height:400px; width:500px;">
+	</div>
+</div>
+
+<style type="text/css">
+	[draggable] {
+	  -moz-user-select: none;
+	  -khtml-user-select: none;
+	  -webkit-user-select: none;
+	  user-select: none;
+	}
+
+	.apNode{
+		padding:3px;
+		border:1px solid #787878;
+		margin:2px;
+		cursor:pointer;
+	}
+
+	.groupNode{
+		border: 2px dashed #787878;
+		padding:3px;
+		margin:2px;
+		min-height:100px;
+	}
+
+	.groupNode input {
+		padding-left: 5px;
+	}
+
+	.groupNode .aps {
+		padding-left: 5px;
+	}
+</style>

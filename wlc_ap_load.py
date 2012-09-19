@@ -36,12 +36,6 @@ def get_and_store_data():
             time.sleep(60 * 5)
             #time.sleep(60 * 15)
 
-def start_webSocketServer():
-    print "Starting WebSocket Server"
-    server = SocketServer.TCPServer(("0.0.0.0", 9999), lib.WebSocketsHandler)
-    server.serve_forever()
-    print "Websocket Started"
-
 def start_mainWebServer():
     global_conf = {
            'global':    { 'server.environment': 'production',
@@ -61,23 +55,20 @@ def main():
     try:
         p0 = Process(target=get_and_store_data,args=())
         p1 = Process(target=start_mainWebServer,args=())
-        p2 = Process(target=start_webSocketServer, args=())
         
         p0.daemon = True
         p1.daemon = True
-        p2.daemon = True
 
         p0.start()
         p1.start()
-        p2.start()
 
         while True:
             time.sleep(.5)
+
     except KeyboardInterrupt:
         print "Killing all the children processes"
         p0.terminate()
         p1.terminate()
-        p2.terminate()
         exit(0)
 
 if __name__ == "__main__":

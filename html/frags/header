@@ -5,6 +5,7 @@
 		<title>Welcome to PacketStorm</title>
 		<LINK REL=StyleSheet HREF="/html/css/style.css" TYPE="text/css" >
 		<script type="text/javascript" src="/html/js/jQuery.min.js" ></script>
+		<script type="text/javascript" src="/html/js/jQuery.ui.min.js" ></script>
 		<script language="javascript" type="text/javascript" src="/html/js/jquery.jqplot.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="/html/css/jquery.jqplot.min.css" />
 		<script type="text/javascript" src="/html/js/jqplot.barRenderer.min.js"></script>

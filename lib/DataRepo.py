@@ -24,6 +24,10 @@ class DataRepo:
         sql.write_data_raw(query)
         query = "CREATE TABLE if not exists wlc_settings (key TEXT PRIMARY KEY, value TEXT)"
         sql.write_data_raw(query)
+        query = "CREATE TABLE if not exists wlc_ap_groups (id INTEGER PRIMARY KEY, group_name TEXT, ap_lat REAL, ap_lng REAL)"
+        sql.write_data_raw(query)
+        query = "CREATE TABLE if not exists wlc_ap_group_binding (group_id INTEGER PRIMARY KEY, ap_key TEXT)"
+        sql.write_data_raw(query)
         query = "CREATE TABLE if not exists wlc_ap_clients (id INTEGER PRIMARY KEY, ap_key text,timestamp INTEGER, clients INTEGER)"
         sql.write_data_raw(query)
         query = "CREATE INDEX if not exists timestampSort on wlc_ap_clients (timestamp DESC)"
@@ -57,9 +61,51 @@ class DataRepo:
         data = []
         for ap in APs:
             node = {}
+            node['key'] = ap[0]
             node['name'] = ap[1]
             node['location'] = ap[2]
-            node['cnt'] = int(db.get_data_single("SELECT clients from wlc_ap_clients WHERE ap_key='" + str(ap[0]) + "' ORDER BY timestamp DESC"))
+            node['cnt'] = int(db.get_data_single("SELECT clients from wlc_ap_clients WHERE ap_key=? ORDER BY timestamp DESC",(str(ap[0]),)))
             data.append(node)
         data = sorted(data, key=lambda k: k['cnt'], reverse = True)
         return data
+
+    def get_groups(self):
+        db = Database(self.filePath)
+        data = []
+        groups = db.get_data_raw("SELECT * FROM wlc_ap_groups")
+        for group in groups:
+            node = {}
+            node['id'] = group[0]
+            node['name'] = group[1]
+            node['lat'] = group[2]
+            node['lng'] = group[3]
+            node['aps'] = []
+            bindings = db.get_data("SELECT * FROM wlc_ap_group_binding WHERE group_id=?",(node['id'],))
+            for binding in bindings:
+                apNode = {}
+                apNode['key'] = binding[1]
+                adDetails = db.get_data("SELECT * FROM wlc_aps WHERE ap_key=?",(apNode['key'],))
+                apNode["name"] = adDetails[0][1]
+                node['aps'].append(apNode)
+            data.append(node)
+        db.commit()
+        return data
+
+    def save_groups(self,groups):
+        db = Database(self.filePath)
+        for group in groups:
+            groupID = group['id']
+            if group['id'] is not None:
+                #update
+                db.write_data("UPDATE wlc_ap_groups SET (group_name=?,ap_lat=?,ap_lng=?) WHERE id=?",(group['name'],group['lat'],group['lng'],group['id'],))
+            else:
+                #insert
+                db.write_data("INSERT INTO wlc_ap_groups (group_name, ap_lat, ap_lng) VALUES (?,?,?)",(group['name'],group['lat'],group['lng'],))
+                groupID = db.get_data_single_raw("SELECT max(id) from wlc_ap_groups")
+
+            db.write_data("DELETE FROM wlc_ap_group_binding WHERE group_id=?",(groupID,))
+            APs = group['aps'].split(":")
+            for ap in APs:
+                if ap != "":
+                    db.write_data("INSERT INTO wlc_ap_group_binding (group_id,ap_key) VALUES (?,?)",(groupID,ap,))
+        db.commit()

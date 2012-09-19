@@ -10,7 +10,7 @@ class WebServer(object):
         
 
     def _header(self,inject):
-        html = open(os.path.join(os.curdir,'html','frags') + '/header','r').read()
+        html = open(os.path.join(os.curdir,'html','frags','header'),'r').read()
         if inject is None:
             html = html.replace("##HEADINJECT##","")
         else:
@@ -18,7 +18,7 @@ class WebServer(object):
         return html
     
     def _footer(self):
-        return open(os.path.join(os.curdir,'html','frags') + '/footer','r').read()
+        return open(os.path.join(os.curdir,'html','frags','footer'),'r').read()
 
     def index(self):
         html = self._header("<script type='text/javascript' src='/html/js/index.js'></script>")
@@ -26,17 +26,41 @@ class WebServer(object):
         html += self._footer()
         return html
 
-    def page(self,id):
-        html = self._header(None)
-        html += str(id)
+    def showmap(self):
+        html = self._header("<script type='text/javascript' src='/html/js/showMap.js'></script><script src='http://maps.google.com/maps/api/js?sensor=false'></script>")
+        html += open(os.path.join(os.curdir,'html','pages','showMap.html'),'r').read()
         html += self._footer()
         return html
-    
+
+    def map_settings(self):
+        html = self._header("<script type='text/javascript' src='/html/js/map_settings.js'></script><script src='/html/js/jquery.simplemodal.1.4.3.min.js'></script><script src='http://maps.google.com/maps/api/js?sensor=false'></script>")
+        html += open(os.path.join(os.curdir,'html','pages','map_settings.html'),'r').read()
+        html += self._footer()
+        return html
+
+    def api_save_groups(self,data):
+        repo = DataRepo(self.dbpath)
+        data = json.loads(data)
+        repo.save_groups(data)
+        jsonData = {}
+        jsonData['success'] = True
+        jsonData['msg'] = 'Groups were saved'
+        return json.dumps(jsonData)
+
     def api_get_currentLoad(self):
-        db = DataRepo(self.dbpath)
-        data = db.get_current_load()
+        repo = DataRepo(self.dbpath)
+        data = repo.get_current_load()
+        return json.dumps(data)
+
+    def api_get_groups(self):
+        repo = DataRepo(self.dbpath)
+        data = repo.get_groups()
         return json.dumps(data)
     
+
     index.exposed = True
-    page.exposed = True
+    showmap.exposed = True
+    map_settings.exposed = True
+    api_save_groups.exposed = True
     api_get_currentLoad.exposed = True
+    api_get_groups.exposed = True
