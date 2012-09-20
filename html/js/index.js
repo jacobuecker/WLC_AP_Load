@@ -7,7 +7,7 @@ function updatePage(){
 				series.push(data[i].cnt);
 				ticks.push(data[i].name);
 			};
-
+			$('currentLoad').empty();
 			var plot = $.jqplot('currentLoad',[series],{
 
 				seriesDefaults:{

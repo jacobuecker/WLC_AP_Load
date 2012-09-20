@@ -57,6 +57,10 @@ class WebServer(object):
         data = repo.get_groups()
         return json.dumps(data)
     
+    def api_delete_group(self,id):
+        repo = DataRepo(self.dbpath)
+        repo.delete_group(id)
+        return json.dumps({"success":True})
 
     index.exposed = True
     showmap.exposed = True
@@ -64,3 +68,4 @@ class WebServer(object):
     api_save_groups.exposed = True
     api_get_currentLoad.exposed = True
     api_get_groups.exposed = True
+    api_delete_group.exposed = True

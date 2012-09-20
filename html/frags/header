@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>Welcome to PacketStorm</title>
+		<title>Welcome to WLC_AP_LOAD</title>
 		<LINK REL=StyleSheet HREF="/html/css/style.css" TYPE="text/css" >
 		<script type="text/javascript" src="/html/js/jQuery.min.js" ></script>
 		<script type="text/javascript" src="/html/js/jQuery.ui.min.js" ></script>
@@ -18,4 +18,13 @@
 		<h1 id="header">
 			Welcome to WLC AP Load.
 		</h1>
+		<ul style="list-style:none;">
+			<li>
+				<a href="/" >Current Load</a>
+			</li>
+			<li>
+				<a href="/showmap" >Map View</a>
+			</li>
+		</ul>
+		<br style="clear:both;" />
 		<div id="body">

@@ -26,7 +26,7 @@ class DataRepo:
         sql.write_data_raw(query)
         query = "CREATE TABLE if not exists wlc_ap_groups (id INTEGER PRIMARY KEY, group_name TEXT, ap_lat REAL, ap_lng REAL)"
         sql.write_data_raw(query)
-        query = "CREATE TABLE if not exists wlc_ap_group_binding (group_id INTEGER PRIMARY KEY, ap_key TEXT)"
+        query = "CREATE TABLE if not exists wlc_ap_group_binding (id INTEGER PRIMARY KEY, group_id, ap_key TEXT)"
         sql.write_data_raw(query)
         query = "CREATE TABLE if not exists wlc_ap_clients (id INTEGER PRIMARY KEY, ap_key text,timestamp INTEGER, clients INTEGER)"
         sql.write_data_raw(query)
@@ -80,15 +80,17 @@ class DataRepo:
             node['lat'] = group[2]
             node['lng'] = group[3]
             node['aps'] = []
+            node['cnt'] = 0
             bindings = db.get_data("SELECT * FROM wlc_ap_group_binding WHERE group_id=?",(node['id'],))
             for binding in bindings:
                 apNode = {}
-                apNode['key'] = binding[1]
+                apNode['key'] = binding[2]
                 adDetails = db.get_data("SELECT * FROM wlc_aps WHERE ap_key=?",(apNode['key'],))
                 apNode["name"] = adDetails[0][1]
                 node['aps'].append(apNode)
+                node['cnt'] += int(db.get_data_single("SELECT clients from wlc_ap_clients WHERE ap_key=? ORDER BY timestamp DESC",(str(apNode['key']),)))
             data.append(node)
-        db.commit()
+
         return data
 
     def save_groups(self,groups):
@@ -97,7 +99,7 @@ class DataRepo:
             groupID = group['id']
             if group['id'] is not None:
                 #update
-                db.write_data("UPDATE wlc_ap_groups SET (group_name=?,ap_lat=?,ap_lng=?) WHERE id=?",(group['name'],group['lat'],group['lng'],group['id'],))
+                db.write_data("UPDATE wlc_ap_groups SET group_name=?,ap_lat=?,ap_lng=? WHERE id=?",(group['name'],group['lat'],group['lng'],group['id'],))
             else:
                 #insert
                 db.write_data("INSERT INTO wlc_ap_groups (group_name, ap_lat, ap_lng) VALUES (?,?,?)",(group['name'],group['lat'],group['lng'],))
@@ -108,4 +110,10 @@ class DataRepo:
             for ap in APs:
                 if ap != "":
                     db.write_data("INSERT INTO wlc_ap_group_binding (group_id,ap_key) VALUES (?,?)",(groupID,ap,))
+        db.commit()
+
+    def delete_group(self,groupID):
+        db = Database(self.filePath)
+        db.write_data("DELETE FROM wlc_ap_group_binding WHERE group_id=?",(groupID,))
+        db.write_data("DELETE FROM wlc_ap_groups WHERE id=?",(groupID,))
         db.commit()

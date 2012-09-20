@@ -40,9 +40,13 @@ code {
     margin: 0 15px 0 15px;
 }
 
+
+
 li{
-  font-size: 24px;
-  padding-bottom: 12px;
+    font-size: 15px;
+    padding-left: 10px;
+    padding-bottom: 12px;
+    float:left;
 }
 
 #conns li{
@@ -77,3 +81,7 @@ p.footer{
 }
 #simplemodal-overlay {background-color:#000;}
 #simplemodal-container {background-color:#333; border:8px solid #444; padding:12px;}
+
+.hover_active{
+    background-color: #00ff00;
+}
