@@ -7,8 +7,8 @@ function updatePage(){
 				series.push(data[i].cnt);
 				ticks.push(data[i].name);
 			};
-			$('currentLoad').empty();
-			var plot = $.jqplot('currentLoad',[series],{
+			$('currentLoad_by_ap').empty();
+			var plot = $.jqplot('currentLoad_by_ap',[series],{
 
 				seriesDefaults:{
 					renderer:$.jqplot.BarRenderer,
@@ -31,6 +31,38 @@ function updatePage(){
 			});
 
 		}
+	},'json');
+
+	$.post("/api_get_groups",{},function(data){
+		var series = [];
+		var ticks = [];
+		for (var i = data.length-1; i >= 0; i--) {
+			series.push(data[i].cnt);
+			ticks.push(data[i].name);
+		};
+
+		$('currentLoad_by_group').empty();
+		var plot = $.jqplot('currentLoad_by_group',[series],{
+
+			seriesDefaults:{
+				renderer:$.jqplot.BarRenderer,
+				pointLabels: { show: true, location: 'e', edgeTolerance: -15 },
+				rendererOptions: { fillToZero: false,
+								   barDirection: 'horizontal'
+				}
+			},
+
+			axes:{
+				xaxis:{ 
+				},
+				yaxis: {renderer:$.jqplot.CategoryAxisRenderer,
+						ticks: ticks,
+						pad: 1.05
+				}
+				
+			}
+
+		});
 	},'json');
 }
 

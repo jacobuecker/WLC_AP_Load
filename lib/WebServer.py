@@ -22,7 +22,7 @@ class WebServer(object):
 
     def index(self):
         html = self._header("<script type='text/javascript' src='/html/js/index.js'></script>")
-        html += "<div id='currentLoad' style='height:1500px;width300px;'></div>"
+        html += open(os.path.join(os.curdir,'html','pages','index.html'),'r').read()
         html += self._footer()
         return html
 

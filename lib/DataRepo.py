@@ -90,7 +90,7 @@ class DataRepo:
                 node['aps'].append(apNode)
                 node['cnt'] += int(db.get_data_single("SELECT clients from wlc_ap_clients WHERE ap_key=? ORDER BY timestamp DESC",(str(apNode['key']),)))
             data.append(node)
-
+        data = sorted(data, key=lambda k: k['cnt'], reverse = True)
         return data
 
     def save_groups(self,groups):

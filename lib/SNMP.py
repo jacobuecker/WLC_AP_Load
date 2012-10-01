@@ -1,3 +1,4 @@
+import sys
 try:
     from pysnmp.entity.rfc3413.oneliner import cmdgen
     from pysnmp.proto import rfc1902
