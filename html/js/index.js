@@ -7,7 +7,7 @@ function updatePage(){
 				series.push(data[i].cnt);
 				ticks.push(data[i].name);
 			};
-			$('currentLoad_by_ap').empty();
+			$('#currentLoad_by_ap').empty();
 			var plot = $.jqplot('currentLoad_by_ap',[series],{
 
 				seriesDefaults:{
@@ -41,7 +41,7 @@ function updatePage(){
 			ticks.push(data[i].name);
 		};
 
-		$('currentLoad_by_group').empty();
+		$('#currentLoad_by_group').empty();
 		var plot = $.jqplot('currentLoad_by_group',[series],{
 
 			seriesDefaults:{
