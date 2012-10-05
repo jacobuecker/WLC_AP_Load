@@ -37,6 +37,7 @@ class DataRepo:
     def save_data(self, ap_data):
         sql = Database(self.filePath)
         paramList = []
+        timestamp = time.time()
         for ap in ap_data:
             params = (str(ap['key']),)
             query = "SELECT * FROM wlc_aps WHERE ap_key=?"
@@ -49,7 +50,7 @@ class DataRepo:
                 params = (str(ap['key']),str(ap['name']),str(ap['location']))
                 query = "Insert INTO wlc_aps (ap_key,ap_name,ap_location) VALUES (?,?,?)"
                 sql.write_data(query,params)
-            params = (str(ap['key']),str(time.time()),str(ap['clients']),)
+            params = (str(ap['key']),str(timestamp),str(ap['clients']),)
             paramList.append(params)
         query = "INSERT INTO wlc_ap_clients (ap_key, timestamp , clients) VALUES (?,?,?)"
         sql.write_data_dump(query,paramList)
@@ -117,3 +118,18 @@ class DataRepo:
         db.write_data("DELETE FROM wlc_ap_group_binding WHERE group_id=?",(groupID,))
         db.write_data("DELETE FROM wlc_ap_groups WHERE id=?",(groupID,))
         db.commit()
+
+    def get_group_history(self, groupID):
+        db = Database(self.filePath)
+        history = db.get_data("select SUM(clients), timestamp from wlc_ap_clients where ap_key in (select ap_key from wlc_ap_group_binding where group_id=?) group by timestamp order by timestamp asc",(groupID,))
+        data = []
+        for x in xrange(0,len(history)):
+            node = {}
+            node['val'] = history[x][0]
+            node['timestamp'] = history[x][1]
+            data.append(node)
+        return data
+
+
+
+

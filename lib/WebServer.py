@@ -4,9 +4,9 @@ import cherrypy
 from DataRepo import DataRepo
 
 class WebServer(object):
-    def __init__(self,dbPath):
+    def __init__(self,dbpath):
         self.clientData = []
-        self.dbpath = dbPath
+        self.dbpath = dbpath
         
 
     def _header(self,inject):
@@ -32,11 +32,28 @@ class WebServer(object):
         html += self._footer()
         return html
 
+    def showGroupDetails(self, groupID):
+        scripts = "<script type='text/javascript' src='/html/js/showGroupDetails.js'></script>"
+        scripts += "<script type='text/javascript' src='/html/js/jquery.slidePicker.min.js'></script>"
+        scripts += "<script src='http://maps.google.com/maps/api/js?sensor=false'></script>"
+        html = self._header(scripts)
+        html += open(os.path.join(os.curdir,'html','pages','showGroupDetails.html'),'r').read()
+        html += self._footer()
+        return html
+
     def map_settings(self):
-        html = self._header("<script type='text/javascript' src='/html/js/map_settings.js'></script><script src='/html/js/jquery.simplemodal.1.4.3.min.js'></script><script src='http://maps.google.com/maps/api/js?sensor=false'></script>")
+        scripts = "<script type='text/javascript' src='/html/js/map_settings.js'></script>"
+        scripts += "<script src='/html/js/jquery.simplemodal.1.4.3.min.js'></script>"
+        scritps += "<script src='http://maps.google.com/maps/api/js?sensor=false'></script>"
+        html = self._header(scripts)
         html += open(os.path.join(os.curdir,'html','pages','map_settings.html'),'r').read()
         html += self._footer()
         return html
+
+    def api_get_groupData(self, id):
+        repo = DataRepo(self.dbpath)
+        history = repo.get_group_history(id)
+        return json.dumps(history)
 
     def api_save_groups(self,data):
         repo = DataRepo(self.dbpath)
@@ -65,7 +82,9 @@ class WebServer(object):
     index.exposed = True
     showmap.exposed = True
     map_settings.exposed = True
+    showGroupDetails.exposed = True
     api_save_groups.exposed = True
     api_get_currentLoad.exposed = True
     api_get_groups.exposed = True
     api_delete_group.exposed = True
+    api_get_groupData.exposed = True
