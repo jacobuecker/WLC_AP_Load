@@ -17,10 +17,13 @@ function updatePage(){
 		if(data != null){
 			//data = data.sort(compare);
 
-			apData = data;
+			$('#currentLoad_by_ap').css("height", (data.length * 25) + "px")
+
+			apData = data.sort(compare);
+
 			var series = [];
 			var ticks = [];
-			for (var i = data.length-1; i >= 0; i--) {
+			for (var i = 0; i < data.length; i++) {
 				series.push(data[i].cnt);
 				ticks.push(data[i].name);
 			};
@@ -50,6 +53,11 @@ function updatePage(){
 				}
 
 			});
+			$('#currentLoad_by_ap').bind('jqplotDataClick',
+	            function (ev, seriesIndex, pointIndex, data) {
+	                window.location.href = "/showAPDetails?apID=" + apData[pointIndex].key;
+	            }
+	        );
 
 		}
 	},'json');

@@ -32,11 +32,20 @@ class WebServer(object):
         html += self._footer()
         return html
 
+    def showAPDetails(self, apID):
+        repo = DataRepo(self.dbpath)
+        scripts = "<script type='text/javascript' src='/html/js/showAPDetails.js'></script>"
+        scripts += "<script type='text/javascript' src='/html/js/jquery.slidePicker.min.js'></script>"
+        html = self._header(scripts)
+        html += "<h2> Details for " + repo.get_ap_details(apID)[0][1] + " access point"
+        html += open(os.path.join(os.curdir,'html','pages','showAPDetails.html'),'r').read()
+        html += self._footer()
+        return html
+
     def showGroupDetails(self, groupID):
         repo = DataRepo(self.dbpath)
         scripts = "<script type='text/javascript' src='/html/js/showGroupDetails.js'></script>"
         scripts += "<script type='text/javascript' src='/html/js/jquery.slidePicker.min.js'></script>"
-        scripts += "<script src='http://maps.google.com/maps/api/js?sensor=false'></script>"
         html = self._header(scripts)
         html += "<h2> Details for " + repo.get_group_details(groupID)[0][1] + " group"
         html += open(os.path.join(os.curdir,'html','pages','showGroupDetails.html'),'r').read()
@@ -51,6 +60,16 @@ class WebServer(object):
         html += open(os.path.join(os.curdir,'html','pages','map_settings.html'),'r').read()
         html += self._footer()
         return html
+
+    def api_get_apData(self, id):
+        repo = DataRepo(self.dbpath)
+        history = repo.get_ap_history(id)
+        return json.dumps(history)
+
+    def api_get_apData_span(self, id, start, stop):
+        repo = DataRepo(self.dbpath)
+        history = repo.get_ap_history_span(id, start, stop)
+        return json.dumps(history)
 
     def api_get_groupData(self, id):
         repo = DataRepo(self.dbpath)
@@ -90,9 +109,12 @@ class WebServer(object):
     showmap.exposed = True
     map_settings.exposed = True
     showGroupDetails.exposed = True
+    showAPDetails.exposed = True
     api_save_groups.exposed = True
     api_get_currentLoad.exposed = True
     api_get_groups.exposed = True
     api_delete_group.exposed = True
     api_get_groupData.exposed = True
     api_get_groupData_span.exposed = True
+    api_get_apData.exposed = True
+    api_get_apData_span.exposed = True

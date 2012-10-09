@@ -119,9 +119,40 @@ class DataRepo:
         db.write_data("DELETE FROM wlc_ap_groups WHERE id=?",(groupID,))
         db.commit()
 
+    def get_ap_details(self, apID):
+        db = Database(self.filePath)
+        data = db.get_data("SELECT * FROM wlc_aps WHERE ap_key=?",(apID,))
+        return data
+
     def get_group_details(self, groupID):
         db = Database(self.filePath)
         data = db.get_data("SELECT * FROM wlc_ap_groups WHERE id=?",(groupID,))
+        return data
+
+    def get_ap_history(self, apID):
+        db = Database(self.filePath)
+        history = db.get_data("select clients, timestamp from wlc_ap_clients where ap_key=? order by timestamp asc",(apID,))
+        data = []
+        for x in xrange(0,len(history)):
+            node = {}
+            node['val'] = history[x][0]
+            time_struct = time.gmtime(history[x][1])
+            node['timestamp'] = time.strftime('%Y-%m-%d %H:%M:%S', time_struct)
+            data.append(node)
+        return data 
+
+    def get_ap_history_span(self, apID, start, stop):
+        db = Database(self.filePath)
+        start = calendar.timegm(time.strptime(start,"%Y-%m-%d %H:%M:%S"))
+        stop = calendar.timegm(time.strptime(stop,"%Y-%m-%d %H:%M:%S"))
+        history = db.get_data("select clients, timestamp from wlc_ap_clients where ap_key =? AND (timestamp >= ? AND timestamp <= ?) order by timestamp asc",(apID,start,stop,))
+        data = []
+        for x in xrange(0,len(history)):
+            node = {}
+            node['val'] = history[x][0]
+            time_struct = time.gmtime(history[x][1])
+            node['timestamp'] = time.strftime('%Y-%m-%d %H:%M:%S', time_struct)
+            data.append(node)
         return data
 
     def get_group_history(self, groupID):
