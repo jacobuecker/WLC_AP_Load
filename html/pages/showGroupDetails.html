@@ -1,8 +1,34 @@
+<style>
+	
+	#zoom_details table{
+		text-align:center;
+	}
 
+</style>
 <hr />
+<h4>Total Details:</h4>
 Data covering	: <span id="dawn_of_time"></span> <br />
 Average Client Count: <span id="average_since_dawn"></span>
 
 <hr />
-<div id="entire_history" style="width:1300px; height:200px;" ></div>
+<div id="entire_history" style="width:1000px; height:200px;" ></div>
 <br />
+<input type="text" id="start" value="" />
+<input type="text" id="stop" value="" />
+<input type="button" value="Zoom" id="btn_zoom" />
+<br />
+<div id="zoom_history" style="width:1000px; height:200px;" ></div>
+<div id="zoom_details"  style="display:none;">
+	<hr />
+	<h4>Zoom Details:</h4>
+	<div style="padding-left:10px;">
+		<span id="zoom_max"></span><br />
+		<span id="zoom_min"></span><br />
+		<span id="zoom_avg"></span><br />
+	</div>
+	<hr />
+	<h4>Raw Data</h4>
+	<div id="zoom_raw_data">
+
+	</div>
+</div>

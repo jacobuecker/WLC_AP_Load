@@ -33,10 +33,12 @@ class WebServer(object):
         return html
 
     def showGroupDetails(self, groupID):
+        repo = DataRepo(self.dbpath)
         scripts = "<script type='text/javascript' src='/html/js/showGroupDetails.js'></script>"
         scripts += "<script type='text/javascript' src='/html/js/jquery.slidePicker.min.js'></script>"
         scripts += "<script src='http://maps.google.com/maps/api/js?sensor=false'></script>"
         html = self._header(scripts)
+        html += "<h2> Details for " + repo.get_group_details(groupID)[0][1] + " group"
         html += open(os.path.join(os.curdir,'html','pages','showGroupDetails.html'),'r').read()
         html += self._footer()
         return html
@@ -53,6 +55,11 @@ class WebServer(object):
     def api_get_groupData(self, id):
         repo = DataRepo(self.dbpath)
         history = repo.get_group_history(id)
+        return json.dumps(history)
+
+    def api_get_groupData_span(self,id, start, stop):
+        repo = DataRepo(self.dbpath)
+        history = repo.get_group_history_span(id, start, stop)
         return json.dumps(history)
 
     def api_save_groups(self,data):
@@ -88,3 +95,4 @@ class WebServer(object):
     api_get_groups.exposed = True
     api_delete_group.exposed = True
     api_get_groupData.exposed = True
+    api_get_groupData_span.exposed = True

@@ -1,3 +1,6 @@
+var zoomHistory = null;
+var groupID = null;
+
 function getParameterByName(name){
   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
   var regexS = "[\\?&]" + name + "=([^&#]*)";
@@ -9,33 +12,75 @@ function getParameterByName(name){
     return decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+function handleStartChange(start){
+	$('#start').val(start);
+}
+
+function handleStopChange(stop){
+	$('#stop').val(stop);
+}
+
+function zeroFill( number, width ){
+  width -= number.toString().length;
+  if ( width > 0 ){
+    return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+  }
+  return number + ""; // always return a string
+}
 
 $(document).ready(function(){
-	var id = getParameterByName("groupID");
-	$.post("/api_get_groupData",{id:id},function(data){
+	groupID = getParameterByName("groupID");
+
+	$('#btn_zoom').click(function(){
+		//var start = humanToEpoch($('#start').val());
+		//var stop = humanToEpoch($('#stop').val());
+
+		$.post('/api_get_groupData_span',{id: groupID, start:$('#start').val(), stop:$('#stop').val() },function(data){
+			var runningTotal = 0;
+			var html = "<table><tr><td>Timestamp</td><td>Num of Clients</td></tr>";
+			for (var x = 0; x < data.length; x++) {
+				runningTotal += data[x].val;
+				html += "<tr><td>" + data[x].timestamp + "</td><td>" + data[x].val + "</td></tr>";
+			}
+			html += "</table>";
+			
+			$('#zoom_max').html('Max: ' + Math.max.apply(Math,data.map(function(o){return o.val;})));
+			$('#zoom_min').html('Min: ' + Math.min.apply(Math,data.map(function(o){return o.val;})));
+			$('#zoom_avg').html('Max: ' + Math.round(runningTotal / data.length));
+			$('#zoom_raw_data').html(html);
+			$('#zoom_details').fadeIn('fast');
+
+
+			$('#zoom_history').slidePicker({data:data});
+		},'json');
+
+	});
+
+	
+	$.post("/api_get_groupData",{id:groupID},function(data){
 		var chartData = [];
-		var start = new Date(data[0].timestamp * 1000);
-		var end = new Date(data[data.length-1].timestamp * 1000);
-
-		var startStr = start.getHours() + ":" + start.getMinutes() + ":" + start.getSeconds() + " " + (start.getMonth() + 1) + "/" + start.getDate() + "/" + start.getFullYear();
-		var endStr = end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds() + " " + (end.getMonth() + 1) + "/" + end.getDate() + "/" + end.getFullYear();
-		
-		$('#dawn_of_time').html(startStr + " <--> " + endStr);
-
+		$('#dawn_of_time').html(data[0].timestamp + " <--> " + data[data.length-1].timestamp);
+		handleStartChange(data[0].timestamp);
+		handleStopChange(data[data.length-1].timestamp)
 		var runningTotal = 0;
 		for (var i = 0; i < data.length; i++) {
 			runningTotal += data[i].val;
-			var stamp = new Date(data[i].timestamp * 1000);
-			stamp = stamp.getHours() + ":" + stamp.getMinutes() + ":" + stamp.getSeconds() + " " + (stamp.getMonth() + 1) + "/" + stamp.getDate() + "/" + stamp.getFullYear();
-			chartData.push({val:data[i].val,
-							timestamp: stamp});
+			//var stamp = epochToHuman(data[i].timestamp);
+			//chartData.push({val:data[i].val,
+			//				timestamp: stamp});
 		};
 
 		var totalAverage = Math.round(runningTotal / data.length);
 		$("#average_since_dawn").html(totalAverage);
 
 
-		$('#entire_history').slidePicker({data:chartData});
+		zoomHistory = $('#entire_history').slidePicker({
+						data:data,
+						startChange: handleStartChange,
+						stopChange: handleStopChange
+					});
+
+
 	},'json');
 
 });

@@ -1,6 +1,6 @@
 from sqliteDB import Database
 import time
-
+import calendar
 
 class DataRepo:
     def __init__(self, filePath):
@@ -119,6 +119,11 @@ class DataRepo:
         db.write_data("DELETE FROM wlc_ap_groups WHERE id=?",(groupID,))
         db.commit()
 
+    def get_group_details(self, groupID):
+        db = Database(self.filePath)
+        data = db.get_data("SELECT * FROM wlc_ap_groups WHERE id=?",(groupID,))
+        return data
+
     def get_group_history(self, groupID):
         db = Database(self.filePath)
         history = db.get_data("select SUM(clients), timestamp from wlc_ap_clients where ap_key in (select ap_key from wlc_ap_group_binding where group_id=?) group by timestamp order by timestamp asc",(groupID,))
@@ -126,7 +131,22 @@ class DataRepo:
         for x in xrange(0,len(history)):
             node = {}
             node['val'] = history[x][0]
-            node['timestamp'] = history[x][1]
+            time_struct = time.gmtime(history[x][1])
+            node['timestamp'] = time.strftime('%Y-%m-%d %H:%M:%S', time_struct)
+            data.append(node)
+        return data
+
+    def get_group_history_span(self, groupID, start, stop):
+        db = Database(self.filePath)
+        start = calendar.timegm(time.strptime(start,"%Y-%m-%d %H:%M:%S"))
+        stop = calendar.timegm(time.strptime(stop,"%Y-%m-%d %H:%M:%S"))
+        history = db.get_data("select SUM(clients), timestamp from wlc_ap_clients where ap_key in (select ap_key from wlc_ap_group_binding where group_id=?) AND (timestamp >= ? AND timestamp <= ?)  group by timestamp order by timestamp asc",(groupID,start,stop,))
+        data = []
+        for x in xrange(0,len(history)):
+            node = {}
+            node['val'] = history[x][0]
+            time_struct = time.gmtime(history[x][1])
+            node['timestamp'] = time.strftime('%Y-%m-%d %H:%M:%S', time_struct)
             data.append(node)
         return data
 
